@@ -1,0 +1,50 @@
+version: "3.7"
+
+services:
+  backend:
+    container_name: backend_horserace
+    build: ./backend
+    env_file: .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${NODE_SERVER_PORT}
+    volumes:
+      - ./backend:/app
+    ports:
+      - ${NODE_SERVER_PORT}:${NODE_SERVER_PORT}
+    restart: always
+    command: npm run dev
+
+  frontend:
+    container_name: frontend_horserace
+    build: ./frontend
+    env_file: .env
+    stdin_open: true
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    links:
+      - backend
+    restart: always
+    depends_on:
+      - backend
+    command: npm run start
+
+  mongodb_container:
+    image: mongo:latest
+    container_name: db_horserace
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+volumes:
+  mongodb_data_container:

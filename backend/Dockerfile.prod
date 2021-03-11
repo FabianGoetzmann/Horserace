@@ -1,0 +1,24 @@
+FROM node:14-alpine as builder
+
+WORKDIR /app
+COPY package*.json ./
+
+RUN npm ci
+RUN npm install tsc -g
+COPY . .
+RUN npm run build
+
+FROM node:14-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+RUN npm install pm2 -g
+
+COPY --from=builder /app/dist ./dist
+
+ENV NODE_ENV=production
+
+WORKDIR /app/dist
+
+EXPOSE 4000
+CMD ["pm2-runtime","app.js"]

@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  backend:
+    container_name: backend_horserace
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - PORT=${NODE_SERVER_PORT}
+    env_file: .env
+    environment:
+      - PORT=${NODE_SERVER_PORT}
+    ports:
+      - ${NODE_SERVER_PORT}:${NODE_SERVER_PORT}
+    restart: always
+
+  frontend:
+    container_name: frontend_horserace
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - BACKEND_IP=${BACKEND_IP}
+    env_file: .env
+    stdin_open: true
+    ports:
+      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+    links:
+      - backend
+    restart: always
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data_container:
